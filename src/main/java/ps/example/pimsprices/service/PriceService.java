@@ -3,13 +3,18 @@ package ps.example.pimsprices.service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import ps.example.pimsprices.domain.Price;
+import ps.example.pimsprices.domain.PricesCategory;
 import ps.example.pimsprices.dto.PriceDTO;
 import ps.example.pimsprices.exception.PriceNotFoundException;
 import ps.example.pimsprices.mapper.PriceMapper;
 import ps.example.pimsprices.repository.PriceRepository;
+import ps.example.pimsprices.repository.PricesCategoryRepository;
 
 import java.math.BigDecimal;
+import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -17,33 +22,61 @@ import java.util.stream.Collectors;
 public class PriceService {
 
     private final PriceRepository priceRepository;
+    private final PricesCategoryRepository pricesCategoryRepository;
     private final PriceMapper priceMapper;
 
     public List<PriceDTO> getAllPrices() {
-        return priceRepository.findAll().stream()
+        List<Price> prices = priceRepository.findAll();
+        if (prices.isEmpty()) {
+            throw new PriceNotFoundException("No prices found");
+        }
+        return prices.stream()
                 .map(priceMapper::toPriceDTO)
                 .collect(Collectors.toList());
     }
-    public Price getByProductId(String productId) {
-        return priceRepository.findByProductId(productId)
-                .orElseThrow(() -> new PriceNotFoundException("Price not found for product: " + productId));
+
+    public List<PriceDTO> getPricesByProductId(String productId) {
+        List<Price> prices = priceRepository.findByProductId(productId);
+        if (prices.isEmpty()) {
+            throw new PriceNotFoundException("No prices found for product: " + productId);
+        }
+        return prices.stream()
+                .map(priceMapper::toPriceDTO)
+                .collect(Collectors.toList());
     }
 
-    public Price createPrice(Price Price) {
-        return priceRepository.save(Price);
+    public PriceDTO createPrice(PriceDTO priceDTO) {
+        Set<PricesCategory> categories = Optional.ofNullable(priceDTO.pricesCategories())
+                .orElse(Collections.emptySet())
+                .stream()
+                .map(categoryDTO -> pricesCategoryRepository.findById(categoryDTO.id())
+                        .orElseThrow(() -> new RuntimeException("Category not found: " + categoryDTO.id())))
+                .collect(Collectors.toSet());
+        Price newPrice = priceMapper.toEntity(priceDTO, categories);
+        Price savedPrice = priceRepository.save(newPrice);
+
+        return priceMapper.toPriceDTO(savedPrice);
     }
 
-    public Price updatePrice(String productId, BigDecimal newPrice) {
-        Price existing = priceRepository.findByProductId(productId)
-                .orElseThrow(() -> new PriceNotFoundException("Price not found for product: " + productId));
-        existing.setPrice(newPrice);
-        return priceRepository.save(existing);
+    public PriceDTO updatePrice(Long priceId, BigDecimal newPrice, Set<Long> categoryIds) {
+        Price existingPrice = priceRepository.findById(priceId)
+                .orElseThrow(() -> new PriceNotFoundException("Price with id " + priceId + " not found"));
+        existingPrice.setPrice(newPrice);
+        if (categoryIds != null && !categoryIds.isEmpty()) {
+            Set<PricesCategory> categories = categoryIds.stream()
+                    .map(id -> pricesCategoryRepository.findById(id)
+                            .orElseThrow(() -> new RuntimeException("Category with id: " + id + " not found")))
+                    .collect(Collectors.toSet());
+            existingPrice.setPricesCategories(categories);
+        }
+        Price updatedPrice = priceRepository.save(existingPrice);
+        return priceMapper.toPriceDTO(updatedPrice);
     }
 
-    public void deletePrice(String productId) {
-        Price existing = priceRepository.findByProductId(productId)
-                .orElseThrow(() -> new PriceNotFoundException("Price not found for product: " + productId));
-        priceRepository.delete(existing);
+    public void deletePrice(Long priceId) {
+        Price existingPrice = priceRepository.findById(priceId)
+                .orElseThrow(() -> new PriceNotFoundException("Price with id: " + priceId + "not found"));
+        priceRepository.delete(existingPrice);
     }
 }
 

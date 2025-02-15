@@ -12,6 +12,7 @@ import ps.example.pimsprices.dto.PriceDTO;
 import ps.example.pimsprices.service.PriceService;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
@@ -57,33 +58,36 @@ class PriceControllerTest {
     void shouldReturnPriceByProductId() throws Exception {
 
         // Given
-        Price price = new Price(1L, "DE-098382", new BigDecimal("19.99"), "EUR", Set.of());
+        PriceDTO priceDTO = new PriceDTO(1L, "DE-098382", new BigDecimal("19.99"), "EUR", Set.of());
+        List<PriceDTO> pricesDTO = new ArrayList<>();;
+        pricesDTO.add(priceDTO);
 
         // When
-        when(priceService.getByProductId("DE-098382")).thenReturn(price);
+        when(priceService.getPricesByProductId("DE-098382")).thenReturn(pricesDTO);
 
         // Then
         mockMvc.perform(get("/api/v1/prices/DE-098382"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.productId", is("DE-098382")))
-                .andExpect(jsonPath("$.price", is(19.99)))
-                .andExpect(jsonPath("$.currency", is("EUR")));
+                .andExpect(jsonPath("$", hasSize(1)))
+                .andExpect(jsonPath("$[0].productId", is("DE-098382")))
+                .andExpect(jsonPath("$[0].price", is(19.99)))
+                .andExpect(jsonPath("$[0].currency", is("EUR")));
     }
 
     @Test
     void shouldCreateNewPrice() throws Exception {
 
         // Given
-        Price price = new Price(null, "DE-123456", new BigDecimal("25.50"), "USD", Set.of());
-        Price savedPrice = new Price(3L, "DE-123456", new BigDecimal("25.50"), "USD", Set.of());
+        PriceDTO priceDTO = new PriceDTO(null, "DE-123456", new BigDecimal("25.50"), "USD", Set.of());
+        PriceDTO savedPriceDTO = new PriceDTO(3L, "DE-123456", new BigDecimal("25.50"), "USD", Set.of());
 
         // When
-        when(priceService.createPrice(any(Price.class))).thenReturn(savedPrice);
+        when(priceService.createPrice(any(PriceDTO.class))).thenReturn(savedPriceDTO);
 
         // Then
         mockMvc.perform(post("/api/v1/prices")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(price)))
+                        .content(objectMapper.writeValueAsString(priceDTO)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id", is(3)))
                 .andExpect(jsonPath("$.productId", is("DE-123456")))
@@ -95,29 +99,29 @@ class PriceControllerTest {
     void shouldUpdatePrice() throws Exception {
 
         // Given
-        Price updatedPrice = new Price(1L, "DE-098382", new BigDecimal("29.99"), "EUR", Set.of());
+        PriceDTO updatedPriceDTO = new PriceDTO(1L, "DE-098382", new BigDecimal("29.99"), "EUR", Set.of());
 
         // When
-        when(priceService.updatePrice(eq("DE-098382"), any(BigDecimal.class))).thenReturn(updatedPrice);
+        when(priceService.updatePrice(eq(1L), any(BigDecimal.class), any())).thenReturn(updatedPriceDTO);
 
         // Then
-        mockMvc.perform(put("/api/v1/prices/DE-098382")
-                        .param("newPrice", "29.99"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.price", is(29.99)));
+        mockMvc.perform(put("/api/v1/prices/1")
+               .param("newPrice", "29.99"))
+               .andExpect(status().isOk())
+               .andExpect(jsonPath("$.price", is(29.99)));
     }
 
     @Test
     void shouldDeletePrice() throws Exception {
 
         // Given
-        doNothing().when(priceService).deletePrice("DE-098382");
+        doNothing().when(priceService).deletePrice(1L);
 
         // When
-        mockMvc.perform(delete("/api/v1/prices/DE-098382"))
+        mockMvc.perform(delete("/api/v1/prices/1"))
                 .andExpect(status().isOk());
 
         // Then
-        verify(priceService, times(1)).deletePrice("DE-098382");
+        verify(priceService, times(1)).deletePrice(1L);
     }
 }

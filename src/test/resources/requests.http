@@ -17,27 +17,13 @@ Content-Type: application/json
 }
 
 ### Aktualizacja ceny produktu
-PUT http://localhost:8080/api/v1/prices/DE-098382?newPrice=39.99
+PUT http://localhost:8080/api/v1/prices/1?newPrice=00.01
 
 ### Usunięcie ceny produktu
-DELETE http://localhost:8080/api/v1/prices/DE-098382
+DELETE http://localhost:8080/api/v1/prices/3
 
 
 ### Pobranie wszystkich kategorii cen
 GET http://localhost:8080/api/v1/pricescategories/all
 Accept: application/json
 
-### Pobranie konkretnej kategorii cen
-GET http://localhost:8080/api/v1/pricescategories/1
-Accept: application/json
-
-### Dodanie nowej kategorii cen
-POST http://localhost:8080/api/v1/pricescategories
-Content-Type: application/json
-
-{
-  "name": "Seasonal Discount"
-}
-
-### Usunięcie kategorii cen
-DELETE http://localhost:8080/api/v1/pricescategories/1

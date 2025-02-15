@@ -9,6 +9,9 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import ps.example.pimsprices.domain.Price;
 import java.math.BigDecimal;
+
+import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.is;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -37,7 +40,9 @@ class PriceControllerIntegrationTest{
         // Then
         mockMvc.perform(get("/api/v1/prices/DE-123456"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.productId").value("DE-123456"))
-                .andExpect(jsonPath("$.price").value(25.50));
+                .andExpect(jsonPath("$", hasSize(1)))
+                .andExpect(jsonPath("$[0].productId", is("DE-123456")))
+                .andExpect(jsonPath("$[0].price", is(25.50)))
+                .andExpect(jsonPath("$[0].currency", is("USD")));
     }
 }
