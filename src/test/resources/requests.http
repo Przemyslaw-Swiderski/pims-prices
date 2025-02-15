@@ -1,0 +1,29 @@
+### Pobranie wszystkich cen
+GET http://localhost:8080/api/v1/prices/all
+Accept: application/json
+
+### Pobranie ceny konkretnego produktu
+GET http://localhost:8080/api/v1/prices/DE-098382
+Accept: application/json
+
+### Dodanie nowej ceny
+POST http://localhost:8080/api/v1/prices
+Content-Type: application/json
+
+{
+  "productId": "DE-123456",
+  "price": 29.99,
+  "currency": "EUR"
+}
+
+### Aktualizacja ceny produktu
+PUT http://localhost:8080/api/v1/prices/1?newPrice=00.01
+
+### Usunięcie ceny produktu
+DELETE http://localhost:8080/api/v1/prices/3
+
+
+### Pobranie wszystkich kategorii cen
+GET http://localhost:8080/api/v1/pricescategories/all
+Accept: application/json
+
