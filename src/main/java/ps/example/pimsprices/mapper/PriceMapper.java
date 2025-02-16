@@ -3,6 +3,7 @@ package ps.example.pimsprices.mapper;
 import org.springframework.stereotype.Component;
 import ps.example.pimsprices.domain.Price;
 import ps.example.pimsprices.domain.PricesCategory;
+import ps.example.pimsprices.domain.Product;
 import ps.example.pimsprices.dto.PriceDTO;
 import ps.example.pimsprices.dto.PricesCategoryDTO;
 
@@ -15,26 +16,26 @@ public class PriceMapper {
     public PriceDTO toPriceDTO(Price price) {
         return new PriceDTO(
                 price.getId(),
-                price.getProductId(),
+                price.getProduct().getId(),
                 price.getPrice(),
                 price.getCurrency(),
                 price.getPricesCategories().stream()
-                        .map(this::toPricesCategoryDTOWithoutPrices) // Unikamy nieskończonej serializacji
+                        .map(this::toPriceDTOWithoutPrices)
                         .collect(Collectors.toSet())
         );
     }
 
-    public Price toEntity(PriceDTO priceDTO, Set<PricesCategory> categories) {
+    public Price toEntity(PriceDTO priceDTO, Product product, Set<PricesCategory> categories) {
         return Price.builder()
                 .id(priceDTO.id())
-                .productId(priceDTO.productId())
+                .product(product)
                 .price(priceDTO.price())
                 .currency(priceDTO.currency())
                 .pricesCategories(categories)
                 .build();
     }
 
-    public PricesCategoryDTO toPricesCategoryDTOWithoutPrices(PricesCategory category) {
-        return new PricesCategoryDTO(category.getId(), category.getName(), Set.of()); // Pusta lista `prices`
+    public PricesCategoryDTO toPriceDTOWithoutPrices(PricesCategory category) {
+        return new PricesCategoryDTO(category.getId(), category.getName(), Set.of());
     }
 }
