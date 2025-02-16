@@ -1,14 +1,18 @@
 package ps.example.pimsprices.service;
 
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import ps.example.pimsprices.domain.Price;
 import ps.example.pimsprices.domain.PricesCategory;
+import ps.example.pimsprices.domain.Product;
 import ps.example.pimsprices.dto.PriceDTO;
 import ps.example.pimsprices.exception.PriceNotFoundException;
 import ps.example.pimsprices.mapper.PriceMapper;
 import ps.example.pimsprices.repository.PriceRepository;
 import ps.example.pimsprices.repository.PricesCategoryRepository;
+import ps.example.pimsprices.repository.ProductRepository;
 
 import java.math.BigDecimal;
 import java.util.Collections;
@@ -23,7 +27,11 @@ public class PriceService {
 
     private final PriceRepository priceRepository;
     private final PricesCategoryRepository pricesCategoryRepository;
+    private final ProductRepository productRepository;
     private final PriceMapper priceMapper;
+    private final KafkaTemplate<String, String> kafkaTemplate;
+
+    private static final String PRICE_TOPIC = "price-topic";
 
     public List<PriceDTO> getAllPrices() {
         List<Price> prices = priceRepository.findAll();
@@ -46,14 +54,20 @@ public class PriceService {
     }
 
     public PriceDTO createPrice(PriceDTO priceDTO) {
+        Product product = productRepository.findById(priceDTO.productId())
+                .orElseThrow(() -> new EntityNotFoundException("Product not found with id: " + priceDTO.productId()));
         Set<PricesCategory> categories = Optional.ofNullable(priceDTO.pricesCategories())
                 .orElse(Collections.emptySet())
                 .stream()
                 .map(categoryDTO -> pricesCategoryRepository.findById(categoryDTO.id())
                         .orElseThrow(() -> new RuntimeException("Category not found: " + categoryDTO.id())))
                 .collect(Collectors.toSet());
-        Price newPrice = priceMapper.toEntity(priceDTO, categories);
+        Price newPrice = priceMapper.toEntity(priceDTO, product, categories);
         Price savedPrice = priceRepository.save(newPrice);
+
+        String message = String.format("{\"event\":\"PRICE_CREATED\",\"productId\":\"%s\",\"price\":%.2f}",
+                savedPrice.getProduct(), savedPrice.getPrice());
+        kafkaTemplate.send(PRICE_TOPIC, message);
 
         return priceMapper.toPriceDTO(savedPrice);
     }
@@ -70,6 +84,11 @@ public class PriceService {
             existingPrice.setPricesCategories(categories);
         }
         Price updatedPrice = priceRepository.save(existingPrice);
+
+        String message = String.format("{\"event\":\"PRICE_UPDATED\",\"productId\":\"%s\",\"price\":%.2f}",
+                updatedPrice.getProduct(), updatedPrice.getPrice());
+        kafkaTemplate.send(PRICE_TOPIC, message);
+
         return priceMapper.toPriceDTO(updatedPrice);
     }
 

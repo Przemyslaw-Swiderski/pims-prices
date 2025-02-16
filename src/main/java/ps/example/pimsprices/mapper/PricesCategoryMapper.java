@@ -18,7 +18,7 @@ public class PricesCategoryMapper {
                 category.getId(),
                 category.getName(),
                 category.getPrices().stream()
-                        .map(this::toPriceDTOWithoutCategories) // Unikamy nieskończonej serializacji
+                        .map(this::toPriceDTOWithoutCategories)
                         .collect(Collectors.toSet())
         );
     }
@@ -32,6 +32,5 @@ public class PricesCategoryMapper {
     }
 
     public PriceDTO toPriceDTOWithoutCategories(Price price) {
-        return new PriceDTO(price.getId(), price.getProductId(), price.getPrice(), price.getCurrency(), Set.of()); // Bez listy `categories`
-    }
+        return new PriceDTO(price.getId(), price.getProduct().getId(), price.getPrice(), price.getCurrency(), Set.of());}
 }

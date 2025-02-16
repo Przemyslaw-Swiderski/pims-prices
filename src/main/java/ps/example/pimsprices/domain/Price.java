@@ -7,7 +7,7 @@ import java.math.BigDecimal;
 import java.util.HashSet;
 import java.util.Set;
 
-@Entity(name="Price")
+@Entity(name = "Price")
 @Table(name = "prices")
 @Getter
 @Setter
@@ -19,7 +19,12 @@ public class Price {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    private String productId;
+
+//    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne
+    @JoinColumn(name = "product_id", nullable = false)
+    private Product product;
+
     // price as BigDecimal in order to prevent calculation inaccuracies, especially rounding errors.
     private BigDecimal price;
     private String currency;
@@ -28,7 +33,6 @@ public class Price {
     @JoinTable(
             name = "prices_and_prices_categories",
             joinColumns = @JoinColumn(name = "price_id"),
-            inverseJoinColumns = @JoinColumn(name = "prices_category_id")
-    )
+            inverseJoinColumns = @JoinColumn(name = "prices_category_id"))
     private Set<PricesCategory> pricesCategories = new HashSet<>();
 }
