@@ -70,19 +70,18 @@ public class AuthController {
             return ResponseEntity.badRequest().body(new MessageResponse("Error: Email is already in use!"));
         }
 
-        // Create new user's account
         User user = new User(signUpRequest.getUsername(), signUpRequest.getEmail(), encoder.encode(signUpRequest.getPassword()),
                 signUpRequest.getFirstname(), signUpRequest.getSurname());
 
         Set<String> strRoles = signUpRequest.getRoles();
         Set<Role> roles = new HashSet<>();
 
-        if (strRoles == null) { // adnotacjami w dtos
+        if (strRoles == null) {
             Role userRole = roleRepository.findByName(ERole.ROLE_USER)
                     .orElseThrow(() -> new RuntimeException("Error: Role is not found."));
             roles.add(userRole);
         } else {
-            strRoles.forEach(role -> { //w stream
+            strRoles.forEach(role -> {
                 switch (role) {
                     case "admin":
                         Role adminRole = roleRepository.findByName(ERole.ROLE_ADMIN)
@@ -137,7 +136,7 @@ public class AuthController {
 
         return refreshTokenService.findByToken(requestRefreshToken)
                 .map(refreshTokenService::verifyExpiration)
-                .map(RefreshToken::getUser) // użytkownika nie z bazy tylko z access tokena sprawdzić czy to byłoby wystarczające
+                .map(RefreshToken::getUser)
                 .map(user -> {
                     String token = jwtUtils.generateTokenFromUsername(user.getUsername());
 
@@ -146,8 +145,6 @@ public class AuthController {
 
                     return ResponseEntity.ok(new TokenRefreshResponse(token, newRefreshToken.getToken()));
                 })
-//                    return ResponseEntity.ok(new TokenRefreshResponse(token, requestRefreshToken));
-//              })
                 .orElseThrow(() -> new TokenRefreshException(requestRefreshToken,
                         "Refresh token is not in database!"));
     }
@@ -155,137 +152,7 @@ public class AuthController {
     @PostMapping("/signout")
     public ResponseEntity<?> logoutUser(@Valid @RequestBody TokenRefreshRequest request) {
         String requestRefreshToken = request.getRefreshToken();
-
-//        UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-//        Long userId = userDetails.getId();
-
-        refreshTokenService.deleteByToken(requestRefreshToken); // jak zrobią bug przy logout przy logout urządzenie podaje swoje id i nie zabezpieczamy endpointa
-//        refreshTokenService.deleteByUserId(userId);
+        refreshTokenService.deleteByToken(requestRefreshToken);
         return ResponseEntity.ok(new MessageResponse("Log out successful!"));
     }
-
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-//
-//import ps.example.pimsprices.controller.auth.dto.JwtTokenRequest;
-//import ps.example.pimsprices.controller.auth.dto.JwtTokenResponse;
-//import ps.example.pimsprices.controller.auth.dto.UserRegistrationDto;
-//import ps.example.pimsprices.security.entities.RefreshToken;
-//import ps.example.pimsprices.security.entities.Role;
-//import ps.example.pimsprices.security.entities.User;
-//import ps.example.pimsprices.security.repositories.RoleRepository;
-//import ps.example.pimsprices.security.repositories.UserRepository;
-//import ps.example.pimsprices.service.auth.JwtTokenService;
-//
-//import ps.example.pimsprices.service.auth.RefreshTokenService;
-//import jakarta.validation.Valid;
-//import org.springframework.beans.factory.annotation.Autowired;
-//import org.springframework.security.authentication.AuthenticationManager;
-//import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-//import org.springframework.security.crypto.password.PasswordEncoder;
-//import org.springframework.web.bind.annotation.*;
-//
-//import static ps.example.pimsprices.config.auth.SpringSecurityConfig.APP_ADMIN;
-//import static ps.example.pimsprices.config.auth.SpringSecurityConfig.APP_GUEST;
-//
-//
-//@RestController
-//@RequestMapping("/api/v1")
-//@CrossOrigin(origins = "http://localhost:3000")
-//public class AuthController {
-//
-//    private AuthenticationManager authenticationManager;
-//    private JwtTokenService jwtTokenService;
-//        private RefreshTokenService refreshTokenService;
-//
-//    public AuthController(AuthenticationManager authenticationManager, JwtTokenService jwtTokenService, RefreshTokenService refreshTokenService){
-//        this.authenticationManager = authenticationManager;
-//        this.jwtTokenService = jwtTokenService;
-//        this.refreshTokenService = refreshTokenService;
-//    }
-//
-//    @PostMapping("/login")
-//    public JwtTokenResponse login(@Valid @RequestBody JwtTokenRequest jwtTokenRequest) {
-//        var authentication = new UsernamePasswordAuthenticationToken(
-//                jwtTokenRequest.username(), jwtTokenRequest.password()
-//        );
-//        authenticationManager.authenticate(authentication);
-//
-//        // Assuming you have a User object representing the authenticated user
-//        User user = userRepository.findByEmail(jwtTokenRequest.username()).orElseThrow();
-//
-//        // Generate both access and refresh tokens
-//        String accessToken = jwtTokenService.generateAccessToken(jwtTokenRequest.username());
-////        String refreshToken = jwtTokenService.generateRefreshToken(user);
-////        String refreshToken = refreshTokenService.generateRefreshToken(user);
-//        RefreshToken refreshToken = refreshTokenService.createRefreshToken(user.getId());
-////        String refreshToken = jwtTokenService.generateRefreshToken(jwtTokenRequest.username());
-//        String userEmail = user.getEmail();
-//        String userName = user.getName();
-//        String userSurname = user.getSurname();
-//
-//        return new JwtTokenResponse(accessToken, refreshToken.getToken(), userEmail, userName, userSurname);
-//    }
-//
-//    //TODO ugly code
-////    1. register method should return some dto with new user data, including uuid
-////    2. Use some UserService/AuthService for registration, use PasswordEncoder in it
-////    3. Above service should use repositories
-////    4. Above service should use mapper to map DTOs and Entities
-//
-//    @Autowired
-//    private UserRepository userRepository;
-//
-//    @Autowired
-//    private RoleRepository roleRepository;
-//
-//    @Autowired
-//    private PasswordEncoder passwordEncoder;
-//
-//    @PostMapping("/register")
-//    public void register(@Valid @RequestBody UserRegistrationDto newUserDto) {
-//        User newUser = new User();
-//        newUser.setEmail(newUserDto.email());
-//        newUser.setPassword(passwordEncoder.encode(newUserDto.password()));
-//
-//        Role userRole = roleRepository.findByName(APP_GUEST).get();
-//        newUser.addRole(userRole);
-//        userRole.addUser(newUser);
-//
-//        userRepository.save(newUser);
-//    }
-//}

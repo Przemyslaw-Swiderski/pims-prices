@@ -49,11 +49,6 @@ public class RefreshTokenService {
     }
 
     @Transactional
-    public int deleteByUserId(Long userId) {
-        return refreshTokenRepository.deleteByUser(userRepository.findById(userId).get());
-    }
-
-    @Transactional
     public void deleteByToken(String requestRefreshToken) { // zwracanie void-ów trudne do testowania
         refreshTokenRepository.deleteByToken(requestRefreshToken);
     }

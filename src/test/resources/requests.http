@@ -1,13 +1,70 @@
+### signup:
+POST localhost:8080/api/auth/signup
+Content-Type: application/json
+
+{
+  "username": "Second_Admin",
+  "email": "second.admin@mail.com",
+  "password": "supersecret",
+  "firstname": "Second",
+  "surname": "Admin",
+  "roles": ["admin", "user"]
+}
+
+
+
+### singin:
+POST localhost:8080/api/auth/signin
+Content-Type: application/json
+
+{
+  "username": "First_User",
+  "password": "supersecret"
+}
+
+> {% client.global.set("auth-token", response.body.accessToken,
+        "refresh-token", response.body.refreshToken); %}
+
+
+
+### token refresh:
+POST localhost:8080/api/auth/refreshtoken
+Content-Type: application/json
+
+{
+  "refreshToken": "ac659c29-cd70-4c52-9191-97314f360c6c"
+}
+
+
+
+### signout:
+POST localhost:8080/api/auth/signout
+Authorization: Bearer {{auth-token}}
+Content-Type: application/json
+
+{
+  "refreshToken": "956a2723-46c8-4666-991e-32019ce1c001"
+}
+
+
+
 ### Pobranie wszystkich cen
 GET http://localhost:8080/api/v1/prices/all
+Authorization: Bearer {{auth-token}}
 Accept: application/json
+
+
 
 ### Pobranie ceny konkretnego produktu
 GET http://localhost:8080/api/v1/prices/660f9511-fd7a-4a2b-89e4-5b3cddfcb49a
+Authorization: Bearer {{auth-token}}
 Accept: application/json
+
+
 
 ### Dodanie nowej ceny
 POST http://localhost:8080/api/v1/prices
+Authorization: Bearer {{auth-token}}
 Content-Type: application/json
 
 {
@@ -16,14 +73,22 @@ Content-Type: application/json
   "currency": "EUR"
 }
 
+
+
 ### Aktualizacja ceny produktu
 PUT http://localhost:8080/api/v1/prices/1?newPrice=00.01
+Authorization: Bearer {{auth-token}}
+
+
 
 ### Usunięcie ceny produktu
 DELETE http://localhost:8080/api/v1/prices/3
+Authorization: Bearer {{auth-token}}
+
 
 
 ### Pobranie wszystkich kategorii cen
 GET http://localhost:8080/api/v1/pricescategories/all
+Authorization: Bearer {{auth-token}}
 Accept: application/json
 

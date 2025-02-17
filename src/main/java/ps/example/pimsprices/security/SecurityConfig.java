@@ -57,11 +57,12 @@ public class SecurityConfig {
 	public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 		http
 				.csrf(AbstractHttpConfigurer::disable)
+				.headers(headers -> headers.frameOptions(frameOptions -> frameOptions.disable()))
 				.authorizeHttpRequests(auth -> auth
-						.requestMatchers(AntPathRequestMatcher.antMatcher("/api/auth/**")).permitAll()
-						.requestMatchers(AntPathRequestMatcher.antMatcher("/api/v1/prices")).permitAll()
-						.requestMatchers(AntPathRequestMatcher.antMatcher("/api/auth/signout")).permitAll()
-						.anyRequest().authenticated()
+						.requestMatchers(AntPathRequestMatcher.antMatcher("/h2-console/**")).permitAll() // Zezwolenie na dostęp do H2
+						.requestMatchers(AntPathRequestMatcher.antMatcher("/api/auth/**")).permitAll() // Publiczne endpointy autoryzacji
+						.requestMatchers(AntPathRequestMatcher.antMatcher("/api/v1/**")).authenticated() // Wymaga logowania dla /api/v1/**
+						.anyRequest().authenticated() // Wszystkie inne requesty też wymagają logowania
 				)
 				.exceptionHandling(exceptionHandling ->
 						exceptionHandling.authenticationEntryPoint(unauthorizedHandler)
@@ -73,36 +74,4 @@ public class SecurityConfig {
 				.addFilterBefore(authenticationJwtTokenFilter(), UsernamePasswordAuthenticationFilter.class);
 		return http.build();
 	}
-
-
-
-//	@Bean
-//  public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-//		http
-//				.csrf(AbstractHttpConfigurer::disable)
-//				.authorizeHttpRequests((authorizeHttpRequests) ->
-//								authorizeHttpRequests
-//										.requestMatchers(
-//												"/api/auth/signup",
-//												"/api/auth/signin",
-//												"/api/auth/refreshtoken",
-//												"/error"
-//										).permitAll() // czy można tutaj wyspecyfikować czy get czy post ?
-////										.requestMatchers(
-////												"/api/v1/auth-only-categories"
-////										).hasRole("admin")
-//										.requestMatchers(
-//												"/api/v1/prices",
-//												"/api/auth/signout"
-////										).authenticated()
-//										).permitAll()
-//				)
-//				.exceptionHandling((exceptionHandling) -> exceptionHandling.authenticationEntryPoint(unauthorizedHandler))
-//				.sessionManagement((sessionManagement) ->
-//						sessionManagement
-//								.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-//				.authenticationProvider(authenticationProvider())
-//				.addFilterBefore(authenticationJwtTokenFilter(), UsernamePasswordAuthenticationFilter.class);
-//    return http.build();
-//  }
 }

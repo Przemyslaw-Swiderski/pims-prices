@@ -6,5 +6,5 @@ app:
   jwt:
     secret: "68576D5A7134743777217A25432A462D4A614E645267556B586E3272357538782F413F4428472B4B6250655368566D5971337336763979244226452948404D63"
 pimsprices:
-    jwtExpirationS: 3600000
-    jwtRefreshExpirationS: 86400000
+    jwtExpirationS: 60000 # in miliseconds
+    jwtRefreshExpirationS: 86400000 # in miliseconds
