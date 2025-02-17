@@ -1,6 +1,6 @@
 # Build
 FROM maven:3.8.3-amazoncorretto-17 AS build
-LABEL authors="ps"
+LABEL authors="prsw"
 WORKDIR /app
 
 COPY pom.xml .
