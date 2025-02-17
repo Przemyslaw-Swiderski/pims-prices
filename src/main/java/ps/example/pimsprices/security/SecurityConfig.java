@@ -1,5 +1,6 @@
 package ps.example.pimsprices.security;
 
+import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import ps.example.pimsprices.security.jwts.AuthEntryPointJwt;
 import ps.example.pimsprices.security.jwts.AuthTokenFilter;
 import ps.example.pimsprices.security.services.UserDetailsServiceImpl;
@@ -19,12 +20,8 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Configuration
-//@EnableWebSecurity
-@EnableGlobalMethodSecurity(
-		// securedEnabled = true,
-		// jsr250Enabled = true,
-		prePostEnabled = true)
-public class WebSecurityConfig { // extends WebSecurityConfigurerAdapter {
+@EnableGlobalMethodSecurity(prePostEnabled = true)
+public class SecurityConfig {
 	@Autowired
 	UserDetailsServiceImpl userDetailsService;
 
@@ -36,11 +33,6 @@ public class WebSecurityConfig { // extends WebSecurityConfigurerAdapter {
 		return new AuthTokenFilter();
 	}
 
-//	@Override
-//	public void configure(AuthenticationManagerBuilder authenticationManagerBuilder) throws Exception {
-//		authenticationManagerBuilder.userDetailsService(userDetailsService).passwordEncoder(passwordEncoder());
-//	}
-	
 	@Bean
   public DaoAuthenticationProvider authenticationProvider() {
       DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
@@ -51,12 +43,6 @@ public class WebSecurityConfig { // extends WebSecurityConfigurerAdapter {
       return authProvider;
   }
 
-//	@Bean
-//	@Override
-//	public AuthenticationManager authenticationManagerBean() throws Exception {
-//		return super.authenticationManagerBean();
-//	}
-	
 	@Bean
   public AuthenticationManager authenticationManager(AuthenticationConfiguration authConfig) throws Exception {
     return authConfig.getAuthenticationManager();
@@ -67,47 +53,56 @@ public class WebSecurityConfig { // extends WebSecurityConfigurerAdapter {
 		return new BCryptPasswordEncoder();
 	}
 
-//	@Override
-//	protected void configure(HttpSecurity http) throws Exception {
-//		http.cors().and().csrf().disable()
-//			.exceptionHandling().authenticationEntryPoint(unauthorizedHandler).and()
-//			.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS).and()
-//			.authorizeRequests().antMatchers("/api/auth/**").permitAll()
-//			.antMatchers("/api/test/**").permitAll()
-//			.anyRequest().authenticated();
-//
-//		http.addFilterBefore(authenticationJwtTokenFilter(), UsernamePasswordAuthenticationFilter.class);
-//	}
-	
 	@Bean
-  public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+	public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 		http
 				.csrf(AbstractHttpConfigurer::disable)
-				.authorizeHttpRequests((authorizeHttpRequests) ->
-								authorizeHttpRequests
-										.requestMatchers(
-												"/api/auth/signup",
-												"/api/auth/signin",
-												"/api/auth/refreshtoken",
-												"/api/v1/sub-points-of-interest-events-images",
-												"/error"
-										).permitAll() // czy można tutaj wyspecyfikować czy get czy post ?
-//										.requestMatchers(
-//												"/api/v1/auth-only-categories"
-//										).hasRole("admin")
-										.requestMatchers(
-												"/api/v1/served-projects",
-												"/api/v1/sub-points-of-interest-events-images",
-												"/api/auth/signout"
-//										).authenticated()
-										).permitAll()
+				.authorizeHttpRequests(auth -> auth
+						.requestMatchers(AntPathRequestMatcher.antMatcher("/api/auth/**")).permitAll()
+						.requestMatchers(AntPathRequestMatcher.antMatcher("/api/v1/prices")).permitAll()
+						.requestMatchers(AntPathRequestMatcher.antMatcher("/api/auth/signout")).permitAll()
+						.anyRequest().authenticated()
 				)
-				.exceptionHandling((exceptionHandling) -> exceptionHandling.authenticationEntryPoint(unauthorizedHandler))
-				.sessionManagement((sessionManagement) ->
-						sessionManagement
-								.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+				.exceptionHandling(exceptionHandling ->
+						exceptionHandling.authenticationEntryPoint(unauthorizedHandler)
+				)
+				.sessionManagement(sessionManagement ->
+						sessionManagement.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+				)
 				.authenticationProvider(authenticationProvider())
 				.addFilterBefore(authenticationJwtTokenFilter(), UsernamePasswordAuthenticationFilter.class);
-    return http.build();
-  }
+		return http.build();
+	}
+
+
+
+//	@Bean
+//  public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+//		http
+//				.csrf(AbstractHttpConfigurer::disable)
+//				.authorizeHttpRequests((authorizeHttpRequests) ->
+//								authorizeHttpRequests
+//										.requestMatchers(
+//												"/api/auth/signup",
+//												"/api/auth/signin",
+//												"/api/auth/refreshtoken",
+//												"/error"
+//										).permitAll() // czy można tutaj wyspecyfikować czy get czy post ?
+////										.requestMatchers(
+////												"/api/v1/auth-only-categories"
+////										).hasRole("admin")
+//										.requestMatchers(
+//												"/api/v1/prices",
+//												"/api/auth/signout"
+////										).authenticated()
+//										).permitAll()
+//				)
+//				.exceptionHandling((exceptionHandling) -> exceptionHandling.authenticationEntryPoint(unauthorizedHandler))
+//				.sessionManagement((sessionManagement) ->
+//						sessionManagement
+//								.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+//				.authenticationProvider(authenticationProvider())
+//				.addFilterBefore(authenticationJwtTokenFilter(), UsernamePasswordAuthenticationFilter.class);
+//    return http.build();
+//  }
 }

@@ -15,7 +15,7 @@ import java.util.UUID;
 
 @Service
 public class RefreshTokenService {
-    @Value("${smartdigiflow.jwtRefreshExpirationS}")
+    @Value("${pimsprices.jwtRefreshExpirationS}")
     private Long refreshTokenDurationMs;
 
     @Autowired

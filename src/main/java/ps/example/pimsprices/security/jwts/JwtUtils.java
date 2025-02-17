@@ -16,7 +16,7 @@ public class JwtUtils {
   @Value("${app.jwt.secret}")
   private String jwtSecret;
 
-  @Value("${smartdigiflow.jwtExpirationS}")
+  @Value("${pimsprices.jwtExpirationS}")
   private int jwtExpirationMs;
 
   public String generateJwtToken(UserDetailsImpl userPrincipal) {

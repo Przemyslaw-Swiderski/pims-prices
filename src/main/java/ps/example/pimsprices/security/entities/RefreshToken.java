@@ -9,6 +9,10 @@ import java.time.Instant;
 @Data
 @Entity(name = "RefreshToken")
 @Table(name = "refresh_tokens")
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+
 public class RefreshToken {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
@@ -22,10 +26,6 @@ public class RefreshToken {
 
     @Column(nullable = false)
     private Instant expiryDate;
-
-    public RefreshToken() {
-    }
-
 }
 
 
