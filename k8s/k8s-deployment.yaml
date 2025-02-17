@@ -1,0 +1,33 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: pims-prices
+  labels:
+    app: pims-prices
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: pims-prices
+  template:
+    metadata:
+      labels:
+        app: pims-prices
+    spec:
+      containers:
+        - name: pims-prices
+          image: gcr.io/my-gcp-project-id/pims-prices:latest
+          ports:
+            - containerPort: 8080
+          envFrom:
+            - configMapRef:
+                name: pims-prices-config
+            - secretRef:
+                name: pims-prices-secret
+          resources:
+            limits:
+              memory: "512Mi"
+              cpu: "500m"
+            requests:
+              memory: "256Mi"
+              cpu: "250m"
