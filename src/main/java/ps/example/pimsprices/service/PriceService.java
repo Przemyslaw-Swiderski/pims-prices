@@ -4,6 +4,7 @@ import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import ps.example.pimsprices.domain.Price;
 import ps.example.pimsprices.domain.PricesCategory;
 import ps.example.pimsprices.domain.Product;
@@ -21,6 +22,9 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+/**
+ * Service for handling price-related business logic.
+ */
 @Service
 @RequiredArgsConstructor
 public class PriceService {
@@ -33,6 +37,12 @@ public class PriceService {
 
     private static final String PRICE_TOPIC = "price-topic";
 
+    /**
+     * Retrieves all prices for all products.
+     *
+     * @return list of PriceDTOs
+     */
+    @Transactional(readOnly = true)
     public List<PriceDTO> getAllPrices() {
         List<Price> prices = priceRepository.findAll();
         if (prices.isEmpty()) {
@@ -43,6 +53,13 @@ public class PriceService {
                 .collect(Collectors.toList());
     }
 
+    /**
+     * Retrieves all prices for a given product.
+     *
+     * @param productId the ID of the product
+     * @return list of prices
+     */
+    @Transactional(readOnly = true)
     public List<PriceDTO> getPricesByProductId(String productId) {
         List<Price> prices = priceRepository.findByProductId(productId);
         if (prices.isEmpty()) {
@@ -53,6 +70,11 @@ public class PriceService {
                 .collect(Collectors.toList());
     }
 
+    /**
+     * Creates new price.
+     *
+     * @param priceDTO with a details of new price
+     */
     public PriceDTO createPrice(PriceDTO priceDTO) {
         Product product = productRepository.findById(priceDTO.productId())
                 .orElseThrow(() -> new EntityNotFoundException("Product not found with id: " + priceDTO.productId()));
@@ -72,6 +94,13 @@ public class PriceService {
         return priceMapper.toPriceDTO(savedPrice);
     }
 
+    /**
+     * Modifies a price.
+     *
+     * @param priceId     the ID of the price
+     * @param newPrice    new value of the price
+     * @param categoryIds IDs of prices categories (not required)
+     */
     public PriceDTO updatePrice(Long priceId, BigDecimal newPrice, Set<Long> categoryIds) {
         Price existingPrice = priceRepository.findById(priceId)
                 .orElseThrow(() -> new PriceNotFoundException("Price with id " + priceId + " not found"));
@@ -92,6 +121,11 @@ public class PriceService {
         return priceMapper.toPriceDTO(updatedPrice);
     }
 
+    /**
+     * Removes the price.
+     *
+     * @param priceId the ID of the price
+     */
     public void deletePrice(Long priceId) {
         Price existingPrice = priceRepository.findById(priceId)
                 .orElseThrow(() -> new PriceNotFoundException("Price with id: " + priceId + "not found"));

@@ -10,9 +10,17 @@ import ps.example.pimsprices.dto.PricesCategoryDTO;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+/**
+ * Mapper class for converting between Price entity and PriceDTO.
+ */
 @Component
 public class PriceMapper {
 
+    /**
+     * Converts Price entity to PriceDTO.
+     * @param price the Price entity
+     * @return PriceDTO
+     */
     public PriceDTO toPriceDTO(Price price) {
         return new PriceDTO(
                 price.getId(),
@@ -25,6 +33,11 @@ public class PriceMapper {
         );
     }
 
+    /**
+     * Converts PriceDTO to Price entity.
+     * @param priceDTO the PriceDTO
+     * @return Price entity
+     */
     public Price toEntity(PriceDTO priceDTO, Product product, Set<PricesCategory> categories) {
         return Price.builder()
                 .id(priceDTO.id())
@@ -35,6 +48,12 @@ public class PriceMapper {
                 .build();
     }
 
+    /**
+     * Converts PricesCategory entity to PricesCategoryDTO without price details.
+     * This method ensures that the returned DTO does not contain the set of prices.
+     * @param category the PricesCategory entity
+     * @return PricesCategoryDTO without price details
+     */
     public PricesCategoryDTO toPriceDTOWithoutPrices(PricesCategory category) {
         return new PricesCategoryDTO(category.getId(), category.getName(), Set.of());
     }
