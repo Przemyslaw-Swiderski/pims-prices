@@ -59,10 +59,11 @@ public class SecurityConfig {
 				.csrf(AbstractHttpConfigurer::disable)
 				.headers(headers -> headers.frameOptions(frameOptions -> frameOptions.disable()))
 				.authorizeHttpRequests(auth -> auth
-						.requestMatchers(AntPathRequestMatcher.antMatcher("/h2-console/**")).permitAll() // Zezwolenie na dostęp do H2
-						.requestMatchers(AntPathRequestMatcher.antMatcher("/api/auth/**")).permitAll() // Publiczne endpointy autoryzacji
-						.requestMatchers(AntPathRequestMatcher.antMatcher("/api/v1/**")).authenticated() // Wymaga logowania dla /api/v1/**
-						.anyRequest().authenticated() // Wszystkie inne requesty też wymagają logowania
+						.requestMatchers(AntPathRequestMatcher.antMatcher("/h2-console/**")).permitAll()
+						.requestMatchers(AntPathRequestMatcher.antMatcher("/api/auth/**")).permitAll()
+						.requestMatchers(AntPathRequestMatcher.antMatcher("/error")).permitAll()
+						.requestMatchers(AntPathRequestMatcher.antMatcher("/api/v1/**")).authenticated()
+						.anyRequest().authenticated()
 				)
 				.exceptionHandling(exceptionHandling ->
 						exceptionHandling.authenticationEntryPoint(unauthorizedHandler)
