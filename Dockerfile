@@ -1,6 +1,6 @@
 # Build
 FROM maven:3.8.3-amazoncorretto-17 AS build
-LABEL authors="prsw"
+LABEL authors="ps"
 WORKDIR /app
 
 COPY pom.xml .
@@ -13,7 +13,7 @@ RUN mvn clean package -DskipTests
 FROM amazoncorretto:17-alpine
 WORKDIR /app
 
-COPY --from=build /app/target/pims-prices-1.0-SNAPSHOT.jar app.jar
+COPY --from=build /app/target/pims-prices-1.0.2-SNAPSHOT.jar app.jar
 
 EXPOSE 8080
 ENTRYPOINT ["java","-jar","app.jar"]
